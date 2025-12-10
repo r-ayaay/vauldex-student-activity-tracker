@@ -23,10 +23,10 @@ const router = createRouter({
       meta: { requiresGuest: true },
     },
     {
-      path: '/dashboard',
+      path: '',
       component: DashboardLayout,
       children: [
-        { path: '', name: 'ActivityOverview', component: StudentActivity },
+        { path: 'dashboard', name: 'ActivityOverview', component: StudentActivity },
         { path: 'activities', name: 'activities', component: Activity },
       ],
       meta: { requiresAuth: true },
