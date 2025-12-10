@@ -10,9 +10,7 @@
         class="w-full border rounded-md p-2 focus:ring-2 focus:ring-blue-500"
       >
         <option disabled value="">Select activity type</option>
-
         <option value="add">➕ Add Activity</option>
-
         <option v-for="activity in activityList" :key="activity.id" :value="activity.id">
           {{ activity.type }} — {{ activity.description }}
         </option>
@@ -35,17 +33,63 @@
             <th class="p-3">Activity</th>
             <th class="p-3">Description</th>
             <th class="p-3">Timestamp</th>
+            <th></th>
           </tr>
         </thead>
-
         <tbody>
           <tr v-for="log in activityLogList" :key="log.id" class="border-t hover:bg-gray-50">
-            <td class="p-3">{{ log.activity.type }}</td>
+            <td class="p-3 cursor-pointer" @click="editActivity(log)">
+              <template v-if="editingActivityId === log.id">
+                <select v-model="editingActivityValue" @change="saveActivity(log)">
+                  <option v-for="activity in activityList" :key="activity.id" :value="activity.id">
+                    {{ activity.type }}
+                  </option>
+                </select>
+              </template>
+              <template v-else>
+                {{ log.activity.type }}
+              </template>
+            </td>
             <td class="p-3">{{ log.activity.description }}</td>
-            <td class="p-3">{{ new Date(log.createdAt).toLocaleString() }}</td>
+            <td class="p-3 cursor-pointer" @click="editTimestamp(log)">
+              <template v-if="editingTimestampId === log.id">
+                <input
+                  type="datetime-local"
+                  v-model="editingTimestampValue"
+                  @blur="saveTimestamp(log)"
+                  class="border rounded p-1 text-sm"
+                />
+              </template>
+              <template v-else>
+                {{ new Date(log.createdAt).toLocaleString() }}
+              </template>
+            </td>
+
+            <td class="p-3 text-red-500 cursor-pointer" @click="deleteActivityLog(log.id)">✕</td>
           </tr>
         </tbody>
       </table>
+
+      <!-- Pagination Controls -->
+      <div class="flex justify-between items-center p-3 border-t">
+        <button
+          @click="changePage(pageNumber - 1)"
+          :disabled="pageNumber === 0"
+          class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+        >
+          Previous
+        </button>
+
+        <div>Page {{ pageNumber + 1 }} of {{ totalPages }}</div>
+
+        <button
+          @click="changePage(pageNumber + 1)"
+          :disabled="pageNumber + 1 >= totalPages"
+          class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
     </div>
   </div>
 
@@ -54,13 +98,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
+import { ref, onMounted } from 'vue'
 import api from '@/api/axios'
-
-const auth = useAuthStore()
-
-const name = computed(() => auth.user?.name || '')
+import AddActivityModal from '@/components/ui/molecules/modals/AddActivityModal.vue'
 
 interface Activity {
   id: number
@@ -76,92 +116,134 @@ interface ActivityLogEntry {
 
 interface PaginatedActivityLog {
   content: ActivityLogEntry[]
-  pageNumber: number
-  pageSize: number
+  number: number // current page (0-based)
+  size: number // page size
   totalPages: number
   totalElements: number
   last: boolean
   first: boolean
   numberOfElements: number
 }
+
 const activityList = ref<Activity[]>([])
+const activityLogList = ref<ActivityLogEntry[]>([])
+
+const pageNumber = ref<number>(0) // instead of ref(0)
+
+const pageSize = ref(5) // entries per page
+const totalPages = ref(1)
 
 async function fetchActivities() {
   try {
     const res = await api.get<Activity[]>('/activity')
     activityList.value = res.data
-    console.log('Fetched activities:', activityList.value)
   } catch (err) {
     console.error(err)
   }
 }
-
-const activityLogList = ref<ActivityLogEntry[]>([])
 
 async function fetchActivityLog() {
   try {
-    const res = await api.get<PaginatedActivityLog>('/activities')
+    const res = await api.get<PaginatedActivityLog>('/activities', {
+      params: { page: pageNumber.value, size: pageSize.value },
+    })
     activityLogList.value = res.data.content
-    console.log('Fetched activity logs:', activityLogList.value)
+    pageNumber.value = res.data.number // <-- updated
+    totalPages.value = res.data.totalPages
   } catch (err) {
     console.error(err)
   }
 }
-onMounted(() => {
-  fetchActivities()
+
+function changePage(newPage: number) {
+  if (newPage < 0 || newPage >= totalPages.value) return
+  pageNumber.value = newPage
   fetchActivityLog()
-})
+}
 
 const selectedActivityId = ref<string | number>('')
 const isPosting = ref(false)
-
-async function logActivity() {
-  if (selectedActivityId.value === 'add') {
-    return
-  }
-
-  if (!selectedActivityId.value) return
-
-  try {
-    isPosting.value = true
-    await api.post('/activities', {
-      activityId: selectedActivityId.value,
-    })
-
-    // Refresh logs after posting
-    await fetchActivityLog()
-  } catch (err) {
-    console.error(err)
-  } finally {
-    isPosting.value = false
-  }
-}
-
 const showAddModal = ref(false)
 const isSubmitting = ref(false)
 
 function handleActivitySelection() {
   if (selectedActivityId.value === 'add') {
     showAddModal.value = true
-    selectedActivityId.value = '' // reset select
+    selectedActivityId.value = ''
   }
 }
 
-import AddActivityModal from '@/components/ui/molecules/modals/AddActivityModal.vue'
+async function logActivity() {
+  if (!selectedActivityId.value || selectedActivityId.value === 'add') return
+  try {
+    isPosting.value = true
+    await api.post('/activities', { activityId: selectedActivityId.value })
+    await fetchActivityLog()
+  } finally {
+    isPosting.value = false
+  }
+}
 
 async function createActivity(payload: { type: string; description: string }) {
   try {
     isSubmitting.value = true
-
     await api.post('/activity', payload)
-
     await fetchActivities()
-
     showAddModal.value = false
-  } catch (err) {
-    console.error(err)
   } finally {
     isSubmitting.value = false
+  }
+}
+
+onMounted(() => {
+  fetchActivities()
+  fetchActivityLog()
+})
+
+async function deleteActivityLog(id: number) {
+  try {
+    await api.delete(`/activities/${id}`)
+    await fetchActivityLog()
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const editingActivityId = ref<number | null>(null)
+const editingActivityValue = ref<number | null>(null)
+
+function editActivity(log: ActivityLogEntry) {
+  editingActivityId.value = log.id
+  editingActivityValue.value = log.activity.id
+}
+
+async function saveActivity(log: ActivityLogEntry) {
+  if (!editingActivityValue.value) return
+  try {
+    await api.put(`/activities/${log.id}`, { activityId: editingActivityValue.value })
+    editingActivityId.value = null
+    await fetchActivityLog()
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const editingTimestampId = ref<number | null>(null)
+const editingTimestampValue = ref<string>('')
+
+function editTimestamp(log: ActivityLogEntry) {
+  editingTimestampId.value = log.id
+  editingTimestampValue.value = log.createdAt.slice(0, 16) // convert to YYYY-MM-DDTHH:mm for datetime-local
+}
+
+async function saveTimestamp(log: ActivityLogEntry) {
+  if (!editingTimestampValue.value) return
+  try {
+    await api.put(`/activities/${log.id}`, { createdAt: editingTimestampValue.value })
+    editingTimestampId.value = null
+    await fetchActivityLog()
+  } catch (err) {
+    console.error(err)
   }
 }
 </script>

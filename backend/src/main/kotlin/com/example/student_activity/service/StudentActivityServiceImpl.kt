@@ -23,7 +23,10 @@ class StudentActivityServiceImpl(
 ) : StudentActivityService {
 
     override fun addActivity(student: User, request: StudentActivityRequest): StudentActivityResponse {
-        val activity = activityRepository.findById(request.activityId)
+        val activityId = request.activityId
+            ?: throw IllegalArgumentException("Activity ID is required") // fail if null
+
+        val activity = activityRepository.findById(activityId)
             .orElseThrow { IllegalArgumentException("Activity not found") }
 
         val studentActivity = StudentActivity(
@@ -34,6 +37,7 @@ class StudentActivityServiceImpl(
         return saved.toResponse()
     }
 
+
     override fun updateActivity(id: Long, request: StudentActivityRequest, student: User): StudentActivityResponse {
         val studentActivity = studentActivityRepository.findById(id)
             .orElseThrow { IllegalArgumentException("Activity log not found") }
@@ -42,12 +46,20 @@ class StudentActivityServiceImpl(
             throw IllegalAccessException("Cannot update another user's activity")
         }
 
-        val activity = activityRepository.findById(request.activityId)
-            .orElseThrow { IllegalArgumentException("Activity not found") }
+        // Only update activity if activityId is provided
+        val updatedActivity = request.activityId?.let { activityId ->
+            activityRepository.findById(activityId)
+                .orElseThrow { IllegalArgumentException("Activity not found") }
+        } ?: studentActivity.activity
+
+        // Only update timestamp if provided
+        val updatedCreatedAt = request.createdAt?.let { LocalDateTime.parse(it) } ?: studentActivity.createdAt
 
         val updated = studentActivity.copy(
-            activity = activity
+            activity = updatedActivity,
+            createdAt = updatedCreatedAt
         )
+
         return studentActivityRepository.save(updated).toResponse()
     }
 
