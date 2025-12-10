@@ -1,6 +1,25 @@
 spring:
   application:
     name: student-activity
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/student_activity_tracker
+    username: raayaay
+    password:   # add your DB password here
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  flyway:
+    enabled: false
+    locations: classpath:db/migration
+
 gg:
   jte:
     development-mode: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  expirationMs: 86400000
