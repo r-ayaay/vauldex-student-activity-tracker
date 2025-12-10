@@ -15,14 +15,47 @@
             <th class="p-3">ID</th>
             <th class="p-3">Type</th>
             <th class="p-3">Description</th>
+            <th></th>
           </tr>
         </thead>
 
         <tbody>
           <tr v-for="activity in activityList" :key="activity.id" class="border-t hover:bg-gray-50">
             <td class="p-3">{{ activity.id }}</td>
-            <td class="p-3">{{ activity.type }}</td>
-            <td class="p-3">{{ activity.description }}</td>
+
+            <!-- Editable Type -->
+            <td class="p-3 cursor-pointer" @click="editType(activity)">
+              <template v-if="editingTypeId === activity.id">
+                <input
+                  v-model="editingTypeValue"
+                  @blur="saveType(activity)"
+                  @keyup.enter="saveType(activity)"
+                  class="border rounded p-1 text-sm w-full"
+                  autofocus
+                />
+              </template>
+              <template v-else>
+                {{ activity.type }}
+              </template>
+            </td>
+
+            <!-- Editable Description -->
+            <td class="p-3 cursor-pointer" @click="editDescription(activity)">
+              <template v-if="editingDescriptionId === activity.id">
+                <input
+                  v-model="editingDescriptionValue"
+                  @blur="saveDescription(activity)"
+                  @keyup.enter="saveDescription(activity)"
+                  class="border rounded p-1 text-sm w-full"
+                  autofocus
+                />
+              </template>
+              <template v-else>
+                {{ activity.description }}
+              </template>
+            </td>
+
+            <td class="p-3 text-red-500 cursor-pointer" @click="deleteActivity(activity.id)">✕</td>
           </tr>
         </tbody>
       </table>
@@ -82,5 +115,60 @@ async function createActivity(payload: { type: string; description: string }) {
 
 function openModal() {
   showAddModal.value = true
+}
+
+async function deleteActivity(id: number) {
+  try {
+    await api.delete(`/activity/${id}`)
+    await fetchActivities()
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const editingTypeId = ref<number | null>(null)
+const editingTypeValue = ref<string>('')
+
+const editingDescriptionId = ref<number | null>(null)
+const editingDescriptionValue = ref<string>('')
+
+function editType(activity: Activity) {
+  editingTypeId.value = activity.id
+  editingTypeValue.value = activity.type
+}
+
+async function saveType(activity: Activity) {
+  if (editingTypeValue.value === activity.type) {
+    editingTypeId.value = null
+    return
+  }
+
+  try {
+    await api.put(`/activity/${activity.id}`, { type: editingTypeValue.value })
+    editingTypeId.value = null
+    await fetchActivities()
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+function editDescription(activity: Activity) {
+  editingDescriptionId.value = activity.id
+  editingDescriptionValue.value = activity.description
+}
+
+async function saveDescription(activity: Activity) {
+  if (editingDescriptionValue.value === activity.description) {
+    editingDescriptionId.value = null
+    return
+  }
+
+  try {
+    await api.put(`/activity/${activity.id}`, { description: editingDescriptionValue.value })
+    editingDescriptionId.value = null
+    await fetchActivities()
+  } catch (err) {
+    console.error(err)
+  }
 }
 </script>

@@ -15,17 +15,25 @@ class ActivityServiceImpl(
     }
 
     override fun addActivity(dto: ActivityDTO): ActivityDTO {
-        val activity = Activity(type = dto.type, description = dto.description)
+        val type = dto.type ?: throw IllegalArgumentException("Activity type is required")
+        val activity = Activity(type = type, description = dto.description)
         val saved = activityRepository.save(activity)
         return saved.toDTO()
     }
 
+
     override fun updateActivity(id: Long, dto: ActivityDTO): ActivityDTO {
         val activity = activityRepository.findById(id)
             .orElseThrow { IllegalArgumentException("Activity not found") }
-        val updated = activity.copy(type = dto.type)
+
+        val updated = activity.copy(
+            type = dto.type ?: activity.type,
+            description = dto.description ?: activity.description
+        )
+
         return activityRepository.save(updated).toDTO()
     }
+
 
     override fun deleteActivity(id: Long) {
         val activity = activityRepository.findById(id)
