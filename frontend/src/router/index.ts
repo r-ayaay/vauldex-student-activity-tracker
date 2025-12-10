@@ -1,11 +1,11 @@
 // src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-// import DashboardLayout from '../components/layouts/dashboard-layout.vue'
-// import PortfolioView from '../views/PortfolioView.vue'
-// import HistoryView from '../views/History-View.vue'
+import DashboardLayout from '../components/layouts/dashboard-layout.vue'
 import Login from '../pages/Login.vue'
 import Register from '../pages/Register.vue'
+import Activity from '../pages/StudentActivity.vue'
+import StudentActivity from '@/pages/Activity.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -22,16 +22,15 @@ const router = createRouter({
       component: () => Register,
       meta: { requiresGuest: true },
     },
-    // {
-    //   path: '/dashboard',
-    //   component: DashboardLayout,
-    //   children: [
-    //     { path: '', name: 'overview', component: PortfolioView },
-    //     { path: 'history', name: 'history', component: HistoryView },
-    //   ],
-
-    //   meta: { requiresAuth: true },
-    // },
+    {
+      path: '/dashboard',
+      component: DashboardLayout,
+      children: [
+        { path: '', name: 'ActivityOverview', component: StudentActivity },
+        { path: 'activities', name: 'activities', component: Activity },
+      ],
+      meta: { requiresAuth: true },
+    },
 
     // default redirect
     { path: '/:pathMatch(.*)*', redirect: '/login' },

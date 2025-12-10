@@ -5,12 +5,12 @@
       <form @submit.prevent="handleLogin" class="space-y-4">
         <div class="flex justify-center items-center m-auto p-8 stroke-[#1C274C]">
           <div class="h-16"></div>
-          <h1 class="text-2xl font-semibold">[Project Name]</h1>
+          <h1 class="text-2xl font-semibold">Student Activity Tracker</h1>
         </div>
 
-        <!-- Username -->
+        <!-- email -->
         <div>
-          <label class="block text-sm font-medium mb-1">Username</label>
+          <label class="block text-sm font-medium mb-1">Email</label>
           <div class="flex">
             <span
               class="inline-flex items-center px-3 bg-gray-200 border rounded-s-sm border-gray-300"
@@ -19,7 +19,7 @@
             </span>
             <input
               type="text"
-              v-model="username"
+              v-model="email"
               class="rounded-e-sm bg-gray-50 border text-gray-900 block w-full text-sm border-gray-300 p-2.5"
               required
             />
@@ -69,10 +69,10 @@ import { useRouter } from 'vue-router'
 
 import { useAuthStore } from '../stores/auth'
 
-import UserIcon from '../components/ui/icons/login/user-icon.vue'
-import LockIcon from '../components/ui/icons/login/lock-icon.vue'
+import UserIcon from '../components/ui/atoms/icons/login/user-icon.vue'
+import LockIcon from '../components/ui/atoms/icons/login/lock-icon.vue'
 
-const username = ref('')
+const email = ref('')
 const password = ref('')
 const error = ref('')
 
@@ -85,7 +85,7 @@ function isAxiosError(err: unknown): err is { response?: { data?: { message?: st
 
 async function handleLogin() {
   try {
-    await auth.login(username.value, password.value)
+    await auth.login(email.value, password.value)
     router.push('/dashboard')
   } catch (err: unknown) {
     if (isAxiosError(err)) {
