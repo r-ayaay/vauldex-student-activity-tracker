@@ -7,7 +7,7 @@
 
       <button
         @click="logout"
-        class="px-3 py-1.5 rounded-md text-sm font-medium text-[#1C274C] border border-[#1C274C] hover:bg-[#f0f2f8] transition"
+        class="px-3 py-1.5 rounded-md text-sm font-medium text-[#1C274C] border border-[#1C274C] hover:bg-[#f0f2f8] transition cursor-pointer"
       >
         Logout
       </button>

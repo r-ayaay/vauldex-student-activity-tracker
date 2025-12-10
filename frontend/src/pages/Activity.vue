@@ -3,7 +3,7 @@
     <div class="bg-white p-4 rounded-lg shadow-sm space-y-3">
       <button
         @click="openModal"
-        class="w-full bg-[#1C274C] disabled:bg-gray-400 text-white py-2 rounded-md hover:bg-[#142046] transition"
+        class="w-full bg-[#1C274C] disabled:bg-gray-400 text-white py-2 rounded-md hover:bg-[#142046] transition cursor-pointer"
       >
         Add Activity
       </button>

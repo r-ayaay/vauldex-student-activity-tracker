@@ -32,7 +32,7 @@
         <!-- Actions -->
         <button
           type="submit"
-          class="w-full text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-sm text-sm px-5 py-2.5"
+          class="w-full text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-sm text-sm px-5 py-2.5 cursor-pointer"
         >
           Register
         </button>

@@ -32,13 +32,16 @@
 
         <button
           @click="submit"
-          class="w-full bg-[#1C274C] text-white py-2 rounded-md hover:bg-[#142046] transition"
+          class="w-full bg-[#1C274C] text-white py-2 rounded-md hover:bg-[#142046] transition cursor-pointer"
           :disabled="isSubmitting"
         >
           {{ isSubmitting ? 'Saving...' : 'Save Activity' }}
         </button>
 
-        <button class="w-full py-2 rounded-md text-gray-600 hover:bg-gray-100" @click="close">
+        <button
+          class="w-full py-2 rounded-md text-gray-600 hover:bg-gray-100 cursor-pointer"
+          @click="close"
+        >
           Cancel
         </button>
       </div>
