@@ -1,140 +1,156 @@
 <template>
-  <div class="space-y-4">
+  <div class="space-y-4 lg:p-4 lg:flex lg:gap-4">
     <!-- Form Card -->
-    <div class="bg-white p-4 rounded-lg shadow-sm space-y-3">
-      <label class="block text-sm font-medium text-gray-700">Activity Type</label>
+    <div class="space-y-4 lg:w-1/3">
+      <div class="bg-white p-4 rounded-lg shadow-sm space-y-3">
+        <label class="block text-sm font-medium text-gray-700">Activity Type</label>
 
-      <select
-        v-model="selectedActivityId"
-        @change="handleActivitySelection"
-        class="w-full border rounded-md p-2 focus:ring-2 focus:ring-blue-500"
-      >
-        <option disabled value="">Select activity type</option>
-        <option value="add">➕ Add Activity</option>
-        <option v-for="activity in activityList" :key="activity.id" :value="activity.id">
-          {{ activity.type }} — {{ activity.description }}
-        </option>
-      </select>
-
-      <button
-        @click="logActivity"
-        class="w-full bg-[#1C274C] disabled:bg-gray-400 text-white py-2 rounded-md hover:bg-[#142046] transition cursor-pointer"
-        :disabled="isPosting || !selectedActivityId"
-      >
-        {{ isPosting ? 'Logging...' : 'Log Activity' }}
-      </button>
-    </div>
-
-    <div class="bg-white p-4 rounded-lg shadow-sm flex space-x-3 items-end">
-      <div class="flex-1">
-        <label class="block text-sm font-medium text-gray-700">Filter by Activity</label>
-        <select v-model="filterType" class="w-full border rounded-md p-2">
-          <option value="">All</option>
-          <option v-for="activity in activityList" :key="activity.id" :value="activity.type">
-            {{ activity.type }}
+        <select
+          v-model="selectedActivityId"
+          @change="handleActivitySelection"
+          class="w-full border rounded-md p-2 focus:ring-2 focus:ring-blue-500"
+        >
+          <option disabled value="">Select activity type</option>
+          <option value="add">➕ Add Activity</option>
+          <option v-for="activity in activityList" :key="activity.id" :value="activity.id">
+            {{ activity.type }} — {{ activity.description }}
           </option>
         </select>
+
+        <button
+          @click="logActivity"
+          class="w-full bg-[#1C274C] disabled:bg-gray-400 text-white py-2 rounded-md hover:bg-[#142046] transition cursor-pointer"
+          :disabled="isPosting || !selectedActivityId"
+        >
+          {{ isPosting ? 'Logging...' : 'Log Activity' }}
+        </button>
       </div>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Start Date</label>
-        <input type="date" v-model="filterStartDate" class="border rounded-md p-2" />
+      <div class="bg-white p-4 rounded-lg shadow-sm space-y-4">
+        <div class="">
+          <label class="block text-sm font-medium text-gray-700">Filter by Activity</label>
+          <select v-model="filterType" class="w-full border rounded-md p-2">
+            <option value="">All</option>
+            <option v-for="activity in activityList" :key="activity.id" :value="activity.type">
+              {{ activity.type }}
+            </option>
+          </select>
+        </div>
+
+        <div
+          class="flex flex-row lg:block lg:space-y-3 items-end lg:items-start space-x-3 lg:space-x-0"
+        >
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Start Date</label>
+            <input type="date" v-model="filterStartDate" class="border rounded-md p-2 lg:w-full" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">End Date</label>
+            <input type="date" v-model="filterEndDate" class="border rounded-md p-2 lg:w-full" />
+          </div>
+
+          <button
+            @click="applyFilters"
+            class="bg-[#1C274C] text-white py-2 px-4 rounded-md hover:bg-[#142046] transition cursor-pointer lg:block w-full"
+          >
+            Apply
+          </button>
+
+          <button
+            @click="resetFilters"
+            class="bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition cursor-pointer lg:block w-full"
+          >
+            Reset
+          </button>
+        </div>
       </div>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700">End Date</label>
-        <input type="date" v-model="filterEndDate" class="border rounded-md p-2" />
-      </div>
-
-      <button
-        @click="applyFilters"
-        class="bg-[#1C274C] text-white py-2 px-4 rounded-md hover:bg-[#142046] transition cursor-pointer"
-      >
-        Apply
-      </button>
-
-      <button
-        @click="resetFilters"
-        class="bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition cursor-pointer"
-      >
-        Reset
-      </button>
     </div>
-
     <!-- Activity Log Table -->
-    <div class="overflow-x-auto bg-white rounded-lg shadow-sm">
-      <table class="min-w-full text-left text-sm">
-        <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
-          <tr>
-            <th class="p-3">Activity</th>
-            <th class="p-3">Description</th>
-            <th class="p-3">Timestamp</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="log in activityLogList" :key="log.id" class="border-t hover:bg-gray-50">
-            <!-- Editable Activity Type -->
-            <td class="p-3">
-              <template v-if="editingActivityId === log.id">
-                <select v-model="editingActivityValue" @change="saveActivity(log)">
-                  <option v-for="activity in activityList" :key="activity.id" :value="activity.id">
-                    {{ activity.type }}
-                  </option>
-                </select>
-              </template>
-              <template v-else>
-                <span class="cursor-pointer hover:underline" @click="editActivity(log)">
-                  {{ log.activity.type }}
-                </span>
-              </template>
-            </td>
+    <div class="w-full lg:w-2/3">
+      <!-- Table container with shadow -->
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-left text-sm">
+            <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
+              <tr>
+                <th class="p-3">Activity</th>
+                <th class="p-3">Description</th>
+                <th class="p-3">Timestamp</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="log in activityLogList" :key="log.id" class="border-t hover:bg-gray-50">
+                <!-- Editable Activity Type -->
+                <td class="p-3">
+                  <template v-if="editingActivityId === log.id">
+                    <select v-model="editingActivityValue" @change="saveActivity(log)">
+                      <option
+                        v-for="activity in activityList"
+                        :key="activity.id"
+                        :value="activity.id"
+                      >
+                        {{ activity.type }}
+                      </option>
+                    </select>
+                  </template>
+                  <template v-else>
+                    <span class="cursor-pointer hover:underline" @click="editActivity(log)">
+                      {{ log.activity.type }}
+                    </span>
+                  </template>
+                </td>
 
-            <!-- Description (non-editable, plain) -->
-            <td class="p-3">{{ log.activity.description }}</td>
+                <!-- Description -->
+                <td class="p-3">{{ log.activity.description }}</td>
 
-            <!-- Editable Timestamp -->
-            <td class="p-3">
-              <template v-if="editingTimestampId === log.id">
-                <input
-                  type="datetime-local"
-                  v-model="editingTimestampValue"
-                  @blur="saveTimestamp(log)"
-                  class="border rounded p-1 text-sm"
-                />
-              </template>
-              <template v-else>
-                <span class="cursor-pointer hover:underline" @click="editTimestamp(log)">
-                  {{ new Date(log.createdAt).toLocaleString() }}
-                </span>
-              </template>
-            </td>
+                <!-- Editable Timestamp -->
+                <td class="p-3">
+                  <template v-if="editingTimestampId === log.id">
+                    <input
+                      type="datetime-local"
+                      v-model="editingTimestampValue"
+                      @blur="saveTimestamp(log)"
+                      class="border rounded p-1 text-sm"
+                    />
+                  </template>
+                  <template v-else>
+                    <span class="cursor-pointer hover:underline" @click="editTimestamp(log)">
+                      {{ new Date(log.createdAt).toLocaleString() }}
+                    </span>
+                  </template>
+                </td>
 
-            <!-- Delete -->
-            <td class="p-3 text-red-500 cursor-pointer" @click="deleteActivityLog(log.id)">✕</td>
-          </tr>
-        </tbody>
-      </table>
+                <!-- Delete -->
+                <td class="p-3 text-red-500 cursor-pointer" @click="deleteActivityLog(log.id)">
+                  ✕
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-      <!-- Pagination Controls -->
-      <div class="flex justify-between items-center p-3 border-t">
-        <button
-          @click="changePage(pageNumber - 1)"
-          :disabled="pageNumber === 0"
-          class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 cursor-pointer"
-        >
-          Previous
-        </button>
+        <!-- Pagination Controls -->
+        <div class="flex justify-between items-center p-3 border-t bg-white">
+          <button
+            @click="changePage(pageNumber - 1)"
+            :disabled="pageNumber === 0"
+            class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 cursor-pointer"
+          >
+            Previous
+          </button>
 
-        <div>Page {{ pageNumber + 1 }} of {{ totalPages }}</div>
+          <div>Page {{ pageNumber + 1 }} of {{ totalPages }}</div>
 
-        <button
-          @click="changePage(pageNumber + 1)"
-          :disabled="pageNumber + 1 >= totalPages"
-          class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 cursor-pointer"
-        >
-          Next
-        </button>
+          <button
+            @click="changePage(pageNumber + 1)"
+            :disabled="pageNumber + 1 >= totalPages"
+            class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 cursor-pointer"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -144,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import api from '@/api/axios'
 import AddActivityModal from '@/components/ui/molecules/modals/AddActivityModal.vue'
 
@@ -176,7 +192,6 @@ const activityLogList = ref<ActivityLogEntry[]>([])
 
 const pageNumber = ref<number>(0) // instead of ref(0)
 
-const pageSize = ref(5) // entries per page
 const totalPages = ref(1)
 
 async function fetchActivities() {
@@ -322,6 +337,32 @@ async function resetFilters() {
   pageNumber.value = 0
   await fetchActivityLog()
 }
+
+const windowWidth = ref(window.innerWidth)
+
+function updateWindowWidth() {
+  windowWidth.value = window.innerWidth
+}
+
+onMounted(() => {
+  window.addEventListener('resize', updateWindowWidth)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateWindowWidth)
+})
+
+// Computed pageSize based on window width
+const pageSize = computed(() => (windowWidth.value >= 1024 ? 10 : 5))
+
+import { watch } from 'vue'
+
+watch(pageSize, async (newSize, oldSize) => {
+  if (newSize !== oldSize) {
+    pageNumber.value = 0 // optional: reset to first page
+    await fetchActivityLog()
+  }
+})
 </script>
 
 <style>
