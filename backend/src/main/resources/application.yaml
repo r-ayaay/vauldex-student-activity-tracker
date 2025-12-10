@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: student-activity
+gg:
+  jte:
+    development-mode: true
