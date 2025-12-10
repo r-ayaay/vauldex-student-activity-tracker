@@ -24,7 +24,7 @@
             <td class="p-3">{{ activity.id }}</td>
 
             <!-- Editable Type -->
-            <td class="p-3 cursor-pointer" @click="editType(activity)">
+            <td class="p-3">
               <template v-if="editingTypeId === activity.id">
                 <input
                   v-model="editingTypeValue"
@@ -35,12 +35,14 @@
                 />
               </template>
               <template v-else>
-                {{ activity.type }}
+                <span class="cursor-pointer hover:underline" @click="editType(activity)">
+                  {{ activity.type }}
+                </span>
               </template>
             </td>
 
             <!-- Editable Description -->
-            <td class="p-3 cursor-pointer" @click="editDescription(activity)">
+            <td class="p-3">
               <template v-if="editingDescriptionId === activity.id">
                 <input
                   v-model="editingDescriptionValue"
@@ -51,7 +53,9 @@
                 />
               </template>
               <template v-else>
-                {{ activity.description }}
+                <span class="cursor-pointer hover:underline" @click="editDescription(activity)">
+                  {{ activity.description }}
+                </span>
               </template>
             </td>
 

@@ -74,7 +74,8 @@
         </thead>
         <tbody>
           <tr v-for="log in activityLogList" :key="log.id" class="border-t hover:bg-gray-50">
-            <td class="p-3 cursor-pointer" @click="editActivity(log)">
+            <!-- Editable Activity Type -->
+            <td class="p-3">
               <template v-if="editingActivityId === log.id">
                 <select v-model="editingActivityValue" @change="saveActivity(log)">
                   <option v-for="activity in activityList" :key="activity.id" :value="activity.id">
@@ -83,11 +84,17 @@
                 </select>
               </template>
               <template v-else>
-                {{ log.activity.type }}
+                <span class="cursor-pointer hover:underline" @click="editActivity(log)">
+                  {{ log.activity.type }}
+                </span>
               </template>
             </td>
+
+            <!-- Description (non-editable, plain) -->
             <td class="p-3">{{ log.activity.description }}</td>
-            <td class="p-3 cursor-pointer" @click="editTimestamp(log)">
+
+            <!-- Editable Timestamp -->
+            <td class="p-3">
               <template v-if="editingTimestampId === log.id">
                 <input
                   type="datetime-local"
@@ -97,10 +104,13 @@
                 />
               </template>
               <template v-else>
-                {{ new Date(log.createdAt).toLocaleString() }}
+                <span class="cursor-pointer hover:underline" @click="editTimestamp(log)">
+                  {{ new Date(log.createdAt).toLocaleString() }}
+                </span>
               </template>
             </td>
 
+            <!-- Delete -->
             <td class="p-3 text-red-500 cursor-pointer" @click="deleteActivityLog(log.id)">✕</td>
           </tr>
         </tbody>
