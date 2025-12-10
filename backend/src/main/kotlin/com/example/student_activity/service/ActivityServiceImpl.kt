@@ -15,7 +15,7 @@ class ActivityServiceImpl(
     }
 
     override fun addActivity(dto: ActivityDTO): ActivityDTO {
-        val activity = Activity(type = dto.type)
+        val activity = Activity(type = dto.type, description = dto.description)
         val saved = activityRepository.save(activity)
         return saved.toDTO()
     }
