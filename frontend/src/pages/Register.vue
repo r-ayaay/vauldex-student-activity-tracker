@@ -1,17 +1,28 @@
-<!-- Register.vue -->
 <template>
   <div class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="w-full max-w-md bg-white p-8 rounded-md shadow-lg">
       <h2 class="text-2xl font-semibold mb-6">Register</h2>
 
       <form @submit.prevent="handleRegister" class="space-y-4">
-        <!-- Username -->
+        <!-- Name -->
         <div>
-          <label class="block text-sm font-medium mb-1">Username</label>
+          <label class="block text-sm font-medium mb-1">Name</label>
           <input
             type="text"
-            v-model="username"
-            placeholder="Username"
+            v-model="name"
+            placeholder="Your full name"
+            class="bg-gray-50 border text-gray-900 block w-full text-sm border-gray-300 p-2.5 rounded"
+            required
+          />
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Email</label>
+          <input
+            type="email"
+            v-model="email"
+            placeholder="you@example.com"
             class="bg-gray-50 border text-gray-900 block w-full text-sm border-gray-300 p-2.5 rounded"
             required
           />
@@ -54,7 +65,8 @@ import { useRouter } from 'vue-router'
 import api from '../api/axios'
 import { useAuthStore } from '../stores/auth'
 
-const username = ref('')
+const name = ref('')
+const email = ref('')
 const password = ref('')
 const error = ref('')
 
@@ -68,12 +80,13 @@ function isAxiosError(err: unknown): err is { response?: { data?: { message?: st
 async function handleRegister() {
   try {
     await api.post('/auth/register', {
-      username: username.value,
+      name: name.value,
+      email: email.value,
       password: password.value,
     })
 
     // After registering, log in using your store
-    await auth.login(username.value, password.value)
+    await auth.login(email.value, password.value)
 
     router.push('/dashboard')
   } catch (err: unknown) {
