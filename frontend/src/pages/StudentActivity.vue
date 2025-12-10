@@ -117,7 +117,6 @@ const isPosting = ref(false)
 
 async function logActivity() {
   if (selectedActivityId.value === 'add') {
-    alert('Add Activity modal coming soon!')
     return
   }
 
