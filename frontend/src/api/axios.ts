@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080', // change later if needed
+  baseURL: import.meta.env.VITE_API_URL, // change later if needed
 })
 
 // read token from localStorage if exists

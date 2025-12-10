@@ -1,6 +1,7 @@
 package com.example.student_activity.config
 
 import com.example.student_activity.filter.JwtFilter
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -33,10 +34,13 @@ class SecurityConfig(private val jwtFilter: JwtFilter) {
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
+    @Value("\${FRONTEND_URL:http://localhost:5173}")
+    private lateinit var frontendUrl: String
+
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        configuration.allowedOrigins = listOf("http://localhost:5173") // frontend origin
+        configuration.allowedOrigins = listOf(frontendUrl) // use env variable
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         configuration.allowedHeaders = listOf("*")
         configuration.allowCredentials = true
