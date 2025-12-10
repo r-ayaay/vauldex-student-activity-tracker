@@ -21,17 +21,12 @@ class DataSeeder(
         // 1️⃣ Seed some Activities
         if (activityRepository.count() == 0L) {
             val activities = listOf(
-                Activity(type = "Coding"),
-                Activity(type = "Reading"),
-                Activity(type = "Workout"),
-                Activity(type = "Meeting"),
-                Activity(type = "Project Work"),
-                Activity(type = "Sports"),
-                Activity(type = "Computer Class"),
-                Activity(type = "Regular Class"),
-                Activity(type = "Cleaning"),
-                Activity(type = "Swimming"),
-                Activity(type = "Home Economics")
+                Activity(type = "Sports", description = "Basketball, Volleyball, etc."),
+                Activity(type = "Computer", description = "Computer lab tasks or coding"),
+                Activity(type = "Class", description = "Attend lectures or lessons"),
+                Activity(type = "Cleaning", description = "Cleaning school premises"),
+                Activity(type = "Swimming", description = "Swimming practice or lessons"),
+                Activity(type = "Home EC", description = "Home Economics tasks")
             )
             activityRepository.saveAll(activities)
             println("Seeded Activities")
@@ -60,7 +55,6 @@ class DataSeeder(
                         StudentActivity(
                             student = user,
                             activity = activity,
-                            description = "Sample description for ${activity.type} by ${user.name}",
                             createdAt = LocalDateTime.now().minusDays((1..5).random().toLong())
                         )
                     )

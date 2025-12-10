@@ -29,7 +29,6 @@ class StudentActivityServiceImpl(
         val studentActivity = StudentActivity(
             student = student,
             activity = activity,
-            description = request.description
         )
         val saved = studentActivityRepository.save(studentActivity)
         return saved.toResponse()
@@ -47,8 +46,7 @@ class StudentActivityServiceImpl(
             .orElseThrow { IllegalArgumentException("Activity not found") }
 
         val updated = studentActivity.copy(
-            activity = activity,
-            description = request.description
+            activity = activity
         )
         return studentActivityRepository.save(updated).toResponse()
     }
@@ -105,8 +103,7 @@ fun StudentActivity.toResponse() = StudentActivityResponse(
     activity = ActivityDTO(
         id = this.activity.id,
         type = this.activity.type,
-
+        description = this.activity.description,
     ),
-    description = this.description,
     createdAt = this.createdAt.toString()
 )

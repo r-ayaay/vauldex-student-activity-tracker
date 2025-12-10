@@ -43,7 +43,8 @@ class AuthController(
             mapOf(
                 "token" to token,
                 "email" to user.email,
-                "user_id" to user.id
+                "user_id" to user.id,
+                "name" to user.name,
             )
         )
     }

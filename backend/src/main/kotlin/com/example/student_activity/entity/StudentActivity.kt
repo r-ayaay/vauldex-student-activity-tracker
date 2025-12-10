@@ -17,10 +17,8 @@ data class StudentActivity(
     @JoinColumn(name = "activity_id", nullable = false)
     val activity: Activity,
 
-    @Column(nullable = true, length = 255) // moved description here
-    val description: String? = null,
-
     @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()
 )
+
 
