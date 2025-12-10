@@ -11,8 +11,11 @@ class ActivityServiceImpl(
 ) : ActivityService {
 
     override fun getAllActivities(): List<ActivityDTO> {
-        return activityRepository.findAll().map { it.toDTO() }
+        return activityRepository.findAll()
+            .sortedBy { it.id }   // sort by ID ascending
+            .map { it.toDTO() }
     }
+
 
     override fun addActivity(dto: ActivityDTO): ActivityDTO {
         val type = dto.type ?: throw IllegalArgumentException("Activity type is required")
