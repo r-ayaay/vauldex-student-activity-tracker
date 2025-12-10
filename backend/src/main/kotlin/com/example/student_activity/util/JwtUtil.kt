@@ -15,16 +15,18 @@ class JwtUtil(
 
     private val expirationMs = 1000 * 60 * 60 * 24L // 24 hours
 
-    fun generateToken(username: String): String {
+    fun generateToken(email: String): String {
         val now = Date()
         val expiry = Date(now.time + expirationMs)
         return Jwts.builder()
-            .setSubject(username)
+            .setSubject(email)          // store email as subject
             .setIssuedAt(now)
             .setExpiration(expiry)
             .signWith(SignatureAlgorithm.HS256, secret.toByteArray())
             .compact()
     }
+
+
 
     fun extractUsername(token: String): String {
         return getClaims(token).subject
@@ -41,12 +43,24 @@ class JwtUtil(
 
     fun getUserIdFromToken(token: String): Long? {
         return try {
-            val claims: Claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).body
-            claims["user_id"].toString().toLong()
+            val claims: Claims = Jwts.parser()
+                .setSigningKey(secret)
+                .parseClaimsJws(token)
+                .body
+
+            val userIdClaim = claims["user_id"]
+            when (userIdClaim) {
+                is Number -> userIdClaim.toLong()
+                is String -> userIdClaim.toLongOrNull()
+                else -> null
+            }
         } catch (e: Exception) {
+            println("Error extracting user_id from token: ${e.message}")
             null
         }
     }
+
+
 
     private fun getClaims(token: String): Claims {
         return Jwts.parser()

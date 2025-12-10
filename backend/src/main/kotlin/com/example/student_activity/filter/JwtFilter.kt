@@ -1,5 +1,6 @@
 package com.example.student_activity.filter
 
+import com.example.student_activity.repository.UserRepository
 import com.example.student_activity.service.CustomUserDetailsService
 import com.example.student_activity.util.JwtUtil
 import jakarta.servlet.FilterChain
@@ -14,7 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 class JwtFilter(
     private val jwtUtil: JwtUtil,
-    private val userDetailsService: CustomUserDetailsService
+    private val userRepository: UserRepository // inject repository directly
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -26,15 +27,18 @@ class JwtFilter(
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             val token = authHeader.substring(7)
             if (jwtUtil.validateToken(token)) {
-                val username = jwtUtil.extractUsername(token)
-                val userDetails = userDetailsService.loadUserByUsername(username)
-                val auth = UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.authorities
-                )
-                auth.details = WebAuthenticationDetailsSource().buildDetails(request)
-                SecurityContextHolder.getContext().authentication = auth
+                val email = jwtUtil.extractUsername(token)
+                val user = userRepository.findByEmail(email)
+                if (user != null) {
+                    val auth = UsernamePasswordAuthenticationToken(
+                        user, null, emptyList()
+                    )
+                    auth.details = WebAuthenticationDetailsSource().buildDetails(request)
+                    SecurityContextHolder.getContext().authentication = auth
+                }
             }
         }
         filterChain.doFilter(request, response)
     }
+
 }
