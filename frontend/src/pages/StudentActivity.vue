@@ -25,6 +25,42 @@
       </button>
     </div>
 
+    <div class="bg-white p-4 rounded-lg shadow-sm flex space-x-3 items-end">
+      <div class="flex-1">
+        <label class="block text-sm font-medium text-gray-700">Filter by Activity</label>
+        <select v-model="filterType" class="w-full border rounded-md p-2">
+          <option value="">All</option>
+          <option v-for="activity in activityList" :key="activity.id" :value="activity.type">
+            {{ activity.type }}
+          </option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Start Date</label>
+        <input type="date" v-model="filterStartDate" class="border rounded-md p-2" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">End Date</label>
+        <input type="date" v-model="filterEndDate" class="border rounded-md p-2" />
+      </div>
+
+      <button
+        @click="applyFilters"
+        class="bg-[#1C274C] text-white py-2 px-4 rounded-md hover:bg-[#142046] transition"
+      >
+        Apply
+      </button>
+
+      <button
+        @click="resetFilters"
+        class="bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition"
+      >
+        Reset
+      </button>
+    </div>
+
     <!-- Activity Log Table -->
     <div class="overflow-x-auto bg-white rounded-lg shadow-sm">
       <table class="min-w-full text-left text-sm">
@@ -144,11 +180,24 @@ async function fetchActivities() {
 
 async function fetchActivityLog() {
   try {
-    const res = await api.get<PaginatedActivityLog>('/activities', {
-      params: { page: pageNumber.value, size: pageSize.value },
-    })
+    const params: Record<string, any> = {
+      page: pageNumber.value,
+      size: pageSize.value,
+    }
+
+    if (filterType.value) params.type = filterType.value
+    if (filterStartDate.value)
+      params.startDate = filterStartDate.value
+        ? `${filterStartDate.value}T00:00:00` // <-- add this
+        : undefined
+    if (filterEndDate.value)
+      params.endDate = filterEndDate.value
+        ? `${filterEndDate.value}T23:59:59` // <-- and this
+        : undefined
+
+    const res = await api.get<PaginatedActivityLog>('/activities', { params })
     activityLogList.value = res.data.content
-    pageNumber.value = res.data.number // <-- updated
+    pageNumber.value = res.data.number
     totalPages.value = res.data.totalPages
   } catch (err) {
     console.error(err)
@@ -245,6 +294,23 @@ async function saveTimestamp(log: ActivityLogEntry) {
   } catch (err) {
     console.error(err)
   }
+}
+
+const filterType = ref<string>('') // activity type filter
+const filterStartDate = ref<string>('') // yyyy-mm-dd
+const filterEndDate = ref<string>('') // yyyy-mm-dd
+
+async function applyFilters() {
+  pageNumber.value = 0 // reset to first page when filtering
+  await fetchActivityLog()
+}
+
+async function resetFilters() {
+  filterType.value = ''
+  filterStartDate.value = ''
+  filterEndDate.value = ''
+  pageNumber.value = 0
+  await fetchActivityLog()
 }
 </script>
 
